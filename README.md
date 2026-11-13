@@ -1,4 +1,4 @@
-# Wind Farm Power Generation & Turbine Health Analytics
+ # Wind Farm Power Generation & Turbine Health Analytics
 
 ## Project Overview
 

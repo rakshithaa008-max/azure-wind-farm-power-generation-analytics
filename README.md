@@ -1,61 +1,91 @@
-# Wind Farm Power Generation & Turbine Health Analytics
+# Azure Wind Farm Power Generation & Turbine Health Analytics
 
 ## Project Overview
 
-A renewable energy analytics portfolio project using synthetic wind turbine sensor data and Microsoft Power BI.
-
-The project analyses electricity generation, wind turbine performance, temperature, vibration and maintenance review indicators.
+An end-to-end Azure Data Engineering and Power BI portfolio project using synthetic wind turbine telemetry data to analyse renewable energy generation, turbine performance, temperature, vibration and maintenance-review indicators.
 
 ## Technologies Used
 
+- Azure Data Lake Storage Gen2 (ADLS)
+- Azure Data Factory (ADF)
+- Azure Synapse Analytics — Serverless SQL
+- SQL
 - Microsoft Power BI Service
 - Power Query
-- Power BI Semantic Model
 - Microsoft Excel
-- Data Visualisation and Analytics
 
-## Implemented Architecture
+## Implemented Azure Data Architecture
 
-Synthetic Wind Turbine Data (Excel)
-→ Power Query Transformation
-→ Power BI Semantic Model
-→ Interactive Power BI Reports
+**Synthetic Wind Turbine CSV → ADLS Gen2 (Landing) → Azure Data Factory (Copy Data Pipeline) → ADLS Gen2 (Bronze) → Azure Synapse Serverless SQL → Energy & Turbine Health Analytics**
 
-## Dataset
+### 1. Data Source
 
-- 10 wind turbines
-- 7 days of hourly telemetry
-- 1,680 synthetic sensor records
-- Wind speed, power output, energy generation, temperature and vibration measurements
+Used synthetic wind turbine telemetry data representing 10 wind turbines, with 1,680 records covering power output, energy generation, wind speed, temperature, vibration and maintenance-review indicators.
 
-## Dashboard 1 — Power Generation Overview
+Source file: `wind_farm_telemetry.csv`
 
-- Total energy generated: approximately **1.26K MWh**
+### 2. Azure Data Lake Storage Gen2
+
+Created storage account `stwindfarmdemo26` with two containers:
+
+- `landing` — stores the uploaded source CSV file.
+- `bronze` — stores the CSV copied by the ingestion pipeline.
+
+### 3. Azure Data Factory
+
+Created and executed the pipeline `pl_windfarm_ingestion`.
+
+The `Copy_landing_to_bronze` activity copies the telemetry CSV from the Landing container into the Bronze container.
+
+The pipeline run succeeded, and the destination file was verified in Azure Storage.
+
+### 4. Azure Synapse Serverless SQL
+
+Used the Synapse workspace `syn-windfarm-demo26` and its built-in serverless SQL pool.
+
+Queried the Bronze CSV directly using SQL `OPENROWSET`, without creating a dedicated SQL pool.
+
+Implemented two SQL analytics scripts:
+
+- `sql_windfarm_energy_kpis.sql` — overall energy and maintenance KPIs.
+- `sql_windfarm_turbine_performance.sql` — turbine-level energy, temperature, vibration and maintenance analysis.
+
+## Verified Project Results
+
+| Metric | Result |
+|---|---:|
+| Telemetry records | 1,680 |
+| Wind turbines | 10 |
+| Total energy generated | 1,257.91 MWh |
+| Maintenance-review records | 29 |
+
+These results were verified using Azure Synapse Serverless SQL on synthetic demonstration data.
+
+## Power BI Dashboards
+
+Created a two-page Power BI report:
+
+**Page 1 — Power Generation Analytics**
+
+- Total energy generated
+- Energy generation trends
 - Energy generation by turbine
-- Daily energy generation trend
-- **29 maintenance-review telemetry records**
 
-![Power Generation Dashboard](power_generation_dashboard.png)
+**Page 2 — Turbine Health Analytics**
 
-## Dashboard 2 — Turbine Health Monitoring
+- Average temperature by turbine
+- Average vibration by turbine
+- Maintenance-review indicators
 
-- Average turbine temperature (°C)
-- Average turbine vibration (mm/s)
-- Comparison across 10 wind turbines
+**Current integration status:** The Power BI report uses the synthetic Excel dataset through Power Query and a Power BI semantic model. The Azure Synapse SQL analysis is implemented separately; a direct Synapse-to-Power-BI data connection has not yet been configured.
 
-![Turbine Health Dashboard](turbine_health_dashboard.png)
+## Repository Structure
 
-## Data Processing
-
-- Imported an Excel dataset into Power BI Service.
-- Converted Excel serial timestamps into Date/Time values using Power Query.
-- Applied Sum aggregation for generated energy.
-- Used Average aggregation for temperature and vibration.
-- Filtered maintenance-review records using `Maintenance_Flag = REVIEW`.
-
-## Future Enhancements
-
-- Ingest telemetry into Azure Data Lake Storage Gen2.
-- Add automated ingestion and transformations.
-- Integrate Azure event-streaming services for near-real-time monitoring.
+- `adf/pl_windfarm_ingestion.json` — Azure Data Factory pipeline definition
+- `sql/sql_windfarm_energy_kpis.sql` — energy KPI queries
+- `sql/sql_windfarm_turbine_performance.sql` — turbine performance queries
+- `power_generation_dashboard.png` — Power BI generation dashboard
+- `turbine_health_dashboard.png` — Power BI turbine health dashboard
+- `wind_farm_powerbi_starter.xlsx` — synthetic source workbook
+- `README.md` — project documentation
 
